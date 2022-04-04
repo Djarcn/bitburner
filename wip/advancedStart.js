@@ -3,18 +3,20 @@
 **/
 /** @param {import("..").NS} ns */
 
+
+// This script is meant to take available private servers and setup weak/grow/hack loops to completely weaken, grow, empty and repeat with multiple offset waves.
+
 export async function main(ns) {
-	//let servers = ["the-hub", "computek", "johnson-ortho", "omega-net", "crush-fitness", "phantasy", "max-hardware", "iron-gym"];
 
-	var servers = ["the-hub", "computek", "johnson-ortho", "omega-net", "crush-fitness", "phantasy", "max-hardware", "iron-gym"];
-	let cores = 2;          //denotes home server core count, for use in calculations
-	let runner = "pserv-1"; //sets which server will run/host the attack
+	let servers = ["the-hub", "computek", "johnson-ortho", "omega-net", "crush-fitness", "phantasy", "max-hardware", "iron-gym"];	//lists the servers we plan to attack
+	let cores = ns.getServer(target).cpuCores;          //denotes home server core count, for use in calculations
+	let runner = "pserv-0"; //sets which server will run/host the attack
 
-	await ns.scp(["/scripts/startV2/hack.js", "/scripts/startV2/grow.js", "/scripts/startV2/weak.js"], "home", runner);    //copies the workhorse script to the host
+	await ns.scp(["/workhorse/hack.js", "/workhorse/grow.js", "/workhorse/weak.js"], "home", runner);    //copies the workhorse script to the host
 
-	let hackRAM = ns.getScriptRam("/scripts/startV2/hack.js");   //grabs the RAM cost of hack.js
-	let growRAM = ns.getScriptRam("/scripts/startV2/grow.js");   //grabs the RAM cost of grow.js
-	let weakRAM = ns.getScriptRam("/scripts/startV2/weak.js");   //grabs the RAM cost of weak.js
+	let hackRAM = ns.getScriptRam("/workhorse/hack.js");   //grabs the RAM cost of hack.js
+	let growRAM = ns.getScriptRam("/workhorse/grow.js");   //grabs the RAM cost of grow.js
+	let weakRAM = ns.getScriptRam("/workhorse/weak.js");   //grabs the RAM cost of weak.js
 	let remainingRam = ns.getServerMaxRam(runner);  //grabs the MaxRam of the host (assumes the host has no scripts running)
 
 	for (let i = 0; i < servers.length; ++i) {
@@ -26,7 +28,7 @@ export async function main(ns) {
 
 		//weaken target server to minDifficulty
 		while (serv.hackDifficulty != serv.minDifficulty) {
-			ns.exec("/scripts/startV2/weak.js", runner, (serv.hackDifficulty - serv.minDifficulty) / ns.weakenAnalyze(1, cores), target, 0);
+			ns.exec("/workhorse/weak.js", runner, (serv.hackDifficulty - serv.minDifficulty) / ns.weakenAnalyze(1, cores), target, 0);
 			await ns.sleep(ns.getWeakenTime(target) + 60);
 			ns.killall(runner);
 			serv = ns.getServer(target);
@@ -47,8 +49,8 @@ export async function main(ns) {
 
 		//grow target server to maxMoney
 		while (serv.moneyAvailable != serv.moneyMax) {
-			ns.exec("/scripts/startV2/weak.js", runner, weakGThreads, target, 0);
-			ns.exec("/scripts/startV2/grow.js", runner, growThreads, target, 0);
+			ns.exec("/workhorse/weak.js", runner, weakGThreads, target, 0);
+			ns.exec("/workhorse/grow.js", runner, growThreads, target, 0);
 			await ns.sleep(weakTime + 60);
 			ns.killall(runner);
 			serv = ns.getServer(target);

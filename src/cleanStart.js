@@ -7,10 +7,10 @@ export async function main(ns) {
 	ns.tail();
 
 	
-	let orig =  ns.read("/src/servers.txt");
-	var servers = orig.split("\r\n").map(function(x){return x.split("\t")});
+	let orig =  ns.read("/lib/servers.txt");	//reads server.txt which contains arrays of server data
+	var servers = orig.split("\r\n").map(function(x){return x.split("\t")});		//processes the file into an actual array
 	let level = ns.getHackingLevel();
-	let script = "/old/early-hack-template.js";
+	let script = "/workhorse/early-hack-template.js";
 	let a = " ";
 	let port1 = ns.fileExists("BruteSSH.exe");
 	let port2 = ns.fileExists("FTPCrack.exe");
@@ -70,6 +70,8 @@ export async function main(ns) {
 
 		await ns.scp(script, serv);
 		ns.nuke(serv);
+
+		ns.killall(serv);
 		if (ram != 0)
 			ns.exec(script, serv, Math.floor(ram / ramUsage), a);
 	}

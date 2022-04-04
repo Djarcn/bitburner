@@ -9,10 +9,10 @@ export async function main(ns) {
     let runner = ns.args[0];
     let cores = ns.getServer(target).cpuCores;
 
-    await ns.scp(["/scripts/startV2/hack.js", "/scripts/startV2/grow.js", "/scripts/startV2/weak.js"], "home", runner);    //copies the workhorse scripts to the host
-    let hackRAM = ns.getScriptRam("/scripts/startV2/hack.js");   //grabs the RAM cost of hack.js
-    let growRAM = ns.getScriptRam("/scripts/startV2/grow.js");   //grabs the RAM cost of grow.js
-    let weakRAM = ns.getScriptRam("/scripts/startV2/weak.js");   //grabs the RAM cost of weak.js
+    await ns.scp(["/workhorse/hack.js", "/workhorse/grow.js", "/workhorse/weak.js"], "home", runner);    //copies the workhorse scripts to the host
+    let hackRAM = ns.getScriptRam("/workhorse/hack.js");   //grabs the RAM cost of hack.js
+    let growRAM = ns.getScriptRam("/workhorse/grow.js");   //grabs the RAM cost of grow.js
+    let weakRAM = ns.getScriptRam("/workhorse/weak.js");   //grabs the RAM cost of weak.js
 
     let me = ns.getPlayer();       //grabs player stats
     let serv = ns.getServer(target);    //grabs targetted server's stats
@@ -23,16 +23,16 @@ export async function main(ns) {
         let ramAvailable = ns.getServerMaxRam(runner) - ns.getServerUsedRam(runner);
         let desiredThreads = (serv.hackDifficulty - serv.minDifficulty) / ns.weakenAnalyze(1, cores);
         if (ramAvailable >= desiredThreads * weakRAM)
-            ns.exec("/scripts/startV2/weak.js", runner, desiredThreads, target, 0);
+            ns.exec("/workhorse/weak.js", runner, desiredThreads, target, 0);
         else {
-            ns.exec("/scripts/startV2/weak.js", runner, ramAvailable / weakRAM, target, 0);
+            ns.exec("/workhorse/weak.js", runner, ramAvailable / weakRAM, target, 0);
             isUsed = false;
         }
         await ns.sleep(ns.getWeakenTime(target) + 120);
         if (isUsed)
-            ns.kill("/scripts/startV2/weak.js", runner, desiredThreads, target, 0);
+            ns.kill("/workhorse/weak.js", runner, desiredThreads, target, 0);
         else
-            ns.kill("/scripts/startV2/weak.js", runner, ramAvailable / weakRAM, target, 0);
+            ns.kill("/workhorse/weak.js", runner, ramAvailable / weakRAM, target, 0);
         serv = ns.getServer(target);
     }
 
@@ -54,29 +54,29 @@ export async function main(ns) {
     while (serv.moneyAvailable != serv.moneyMax) {
         let isUsed = true;
         if (ramAvailable >= (weakGThreads * weakRAM) + (growThreads * growRAM)) {
-            ns.exec("/scripts/startV2/weak.js", runner, weakGThreads, target, 0);
+            ns.exec("/workhorse/weak.js", runner, weakGThreads, target, 0);
             await ns.sleep(60);
-            ns.exec("/scripts/startV2/grow.js", runner, growThreads, target, 0);
+            ns.exec("/workhorse/grow.js", runner, growThreads, target, 0);
         }
         else if (ramAvailable >= weakRAM + growRAM) {
             let threadMult = ramAvailable / ((weakGThreads * weakRAM) + (growThreads * growRAM));
             weakGThreads *= threadMult;
             growThreads *= growThreads;
-            ns.exec("/scripts/startV2/weak.js", runner, Math.floor(weakGThreads), target, 0);
+            ns.exec("/workhorse/weak.js", runner, Math.floor(weakGThreads), target, 0);
             await ns.sleep(60);
-            ns.exec("/scripts/startV2/grow.js", runner, Math.floor(growThreads), target, 0);
+            ns.exec("/workhorse/grow.js", runner, Math.floor(growThreads), target, 0);
             isUsed = false;
         }
         else
             return 0;
         await ns.sleep(weakTime + 60);
         if (isUsed) {
-            ns.kill("/scripts/startV2/weak.js", runner, weakGThreads, target, 0);
-            ns.kill("/scripts/startV2/grow.js", runner, growThreads, target, 0);
+            ns.kill("/workhorse/weak.js", runner, weakGThreads, target, 0);
+            ns.kill("/workhorse/grow.js", runner, growThreads, target, 0);
         }
         else {
-            ns.kill("/scripts/startV2/weak.js", runner, Math.floor(weakGThreads), target, 0);
-            ns.kill("/scripts/startV2/grow.js", runner, Math.floor(growThreads), target, 0);
+            ns.kill("/workhorse/weak.js", runner, Math.floor(weakGThreads), target, 0);
+            ns.kill("/workhorse/grow.js", runner, Math.floor(growThreads), target, 0);
         }
         serv = ns.getServer(target);
     }
@@ -92,11 +92,11 @@ export async function main(ns) {
     }
 
     if (weakHThreads > 0)
-        ns.exec("/scripts/startV2/weak.js", runner, weakHThreads, target, 0);
+        ns.exec("/workhorse/weak.js", runner, weakHThreads, target, 0);
     if (weakGThreads > 0)
-        ns.exec("/scripts/startV2/weak.js", runner, weakGThreads, target, 120);
+        ns.exec("/workhorse/weak.js", runner, weakGThreads, target, 120);
     if (hackThreads > 0)
-        ns.exec("/scripts/startV2/hack.js", runner, hackThreads, target, (weakTime - hackTime - 60));
+        ns.exec("/workhorse/hack.js", runner, hackThreads, target, (weakTime - hackTime - 60));
     if (growThreads > 0)
-        ns.exec("/scripts/startV2/grow.js", runner, growThreads, target, 60 + weakTime - growTime);
+        ns.exec("/workhorse/grow.js", runner, growThreads, target, 60 + weakTime - growTime);
 }

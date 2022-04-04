@@ -5,7 +5,7 @@
 
 export async function main(ns) {
 	// Defines the "target server", which is the server
-	// that we're going to hack. In this case, it's "n00dles"
+	// that we're going to hack, taken in from args.
 	let target = ns.args[0];
 
 	// Defines how much money a server should have before we hack it

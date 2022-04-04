@@ -4,8 +4,9 @@
 /** @param {import("..").NS} ns */
 
 export async function main(ns) {
+    ns.tail();
     let level = ns.getHackingLevel();
-    let script = "/old/early-hack-template.js";
+    let script = "/workhorse/early-hack-template.js";
     let a = " ";
     let ports = 0;
     if (ns.fileExists("BruteSSH.exe"))
@@ -64,9 +65,8 @@ export async function main(ns) {
     }
     else {
         for (let i = 0; i < ns.getPurchasedServerLimit(); i++) {
-            let target = "pserv-" + i;
-            await ns.scp("/old/singleStart.js", "home");
-            ns.exec("/old/singleStart.js", "home", 1, target, a);
+            let host = "pserv-" + i;
+            ns.exec("/functions/singleStart.js", "home", 1, host, a);
         }
     }
 }
