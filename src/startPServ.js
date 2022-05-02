@@ -30,6 +30,8 @@ export async function main(ns) {
         a = "the-hub";
     else if (ports >= 2 && level >= 175)
         a = "silver-helix";
+    else if (ports >= 2 && level >= 175)
+        a = "phantasy";
     else if (ports >= 1 && level >= 100)
         a = "max-hardware";
     else if (level >= 100)
@@ -66,6 +68,7 @@ export async function main(ns) {
     else {
         for (let i = 0; i < ns.getPurchasedServerLimit(); i++) {
             let host = "pserv-" + i;
+            ns.killall(host);
             ns.exec("/functions/singleStart.js", "home", 1, host, a);
         }
     }

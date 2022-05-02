@@ -17,7 +17,7 @@ export async function main(ns) {
 
     // opens ports 1-5
     if (ports > 0 && port1) {
-        ns.brutessh(serv);
+        ns.brutessh(serv);  
     }
     if (ports > 1 && port2) {
         ns.ftpcrack(serv);

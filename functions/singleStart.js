@@ -4,10 +4,9 @@
 /** @param {import("..").NS} ns */
 
 export async function main(ns) {
-    //math?
-    let target = ns.args[1];
-    let runner = ns.args[0];
-    let cores = ns.getServer(target).cpuCores;
+    let runner = ns.args[0];    //takes an argument as the server that will attack
+    let target = ns.args[1];    //takes an argument as the server that is planned to be attack
+    let cores = ns.getServer("home").cpuCores;  //number of cores on home
 
     await ns.scp(["/workhorse/hack.js", "/workhorse/grow.js", "/workhorse/weak.js"], "home", runner);    //copies the workhorse scripts to the host
     let hackRAM = ns.getScriptRam("/workhorse/hack.js");   //grabs the RAM cost of hack.js
@@ -19,10 +18,10 @@ export async function main(ns) {
 
     //weaken target server to minDifficulty
     while (serv.hackDifficulty != serv.minDifficulty) {
-        let isUsed = true;
-        let ramAvailable = ns.getServerMaxRam(runner) - ns.getServerUsedRam(runner);
-        let desiredThreads = (serv.hackDifficulty - serv.minDifficulty) / ns.weakenAnalyze(1, cores);
-        if (ramAvailable >= desiredThreads * weakRAM)
+        let isUsed = true;  //defaults the usage of whether the main method is used as true
+        let ramAvailable = ns.getServerMaxRam(runner) - ns.getServerUsedRam(runner);    //calculates available ram on script runner
+        let desiredThreads = (serv.hackDifficulty - serv.minDifficulty) / ns.weakenAnalyze(1, cores);   //calculates the number of tthreads we will want to get the server "instantly" to its minimum strength
+        if (ramAvailable >= desiredThreads * weakRAM)   
             ns.exec("/workhorse/weak.js", runner, desiredThreads, target, 0);
         else {
             ns.exec("/workhorse/weak.js", runner, ramAvailable / weakRAM, target, 0);
@@ -60,8 +59,8 @@ export async function main(ns) {
         }
         else if (ramAvailable >= weakRAM + growRAM) {
             let threadMult = ramAvailable / ((weakGThreads * weakRAM) + (growThreads * growRAM));
-            weakGThreads *= threadMult;
-            growThreads *= growThreads;
+            weakGThreads = Math.floor(weakGThreads * threadMult);
+            growThreads = Math.floor(threadMult * growThreads);
             ns.exec("/workhorse/weak.js", runner, Math.floor(weakGThreads), target, 0);
             await ns.sleep(60);
             ns.exec("/workhorse/grow.js", runner, Math.floor(growThreads), target, 0);
@@ -85,10 +84,10 @@ export async function main(ns) {
     weakGThreads = ns.growthAnalyzeSecurity(growThreads) / ns.weakenAnalyze(1, cores);  //calculates the number of weaken() threads it would take to undo the security increase caused by grow()
     if (ramCost > ramAvailable) {
         let x = ramAvailable / ramCost;
-        hackThreads *= x;
-        weakHThreads *= x;
-        growThreads *= x;
-        weakGThreads *= x;
+        hackThreads = Math.floor(hackThreads * x);
+        weakHThreads = Math.floor(weakHThreads * x);
+        growThreads = Math.floor(growThreads * x);
+        weakGThreads = Math.floor(weakGThreads * x);
     }
 
     if (weakHThreads > 0)

@@ -7,6 +7,8 @@ export async function main(ns) {
     ns.tail();
     // How much RAM each purchased server will have.
     let ram = Math.pow(2,Math.floor(Math.log((ns.getServerMoneyAvailable("home")/ns.getPurchasedServerLimit())/55000)/Math.log(2)));
+    if(ram>1073741824)
+        ram = 1073741824;
     let hostname = "foo";
 
     // Iterator we'll use for our loop
@@ -29,4 +31,5 @@ export async function main(ns) {
         else
             await ns.sleep(6000);
     }
+    ns.exec("/src/startPServ.js","home");
 }
