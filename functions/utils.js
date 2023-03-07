@@ -48,10 +48,10 @@ export function gainRootAccess(ns, server) {
 export function hasRootAccess(ns, server) {
 	const serverData = ns.getServer(server);
 
-	if (serverData.backdoorInstalled){
+	if (serverData.backdoorInstalled) {
 		return 1;
-    }
-    else{
-        return 0;
-    }
+	}
+	else {
+		return 0;
+	}
 }
